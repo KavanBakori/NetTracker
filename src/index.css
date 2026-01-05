@@ -1,0 +1,54 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-bg text-slate-50 min-h-screen overflow-x-hidden;
+    background: radial-gradient(circle at top left, #1e293b, #0f172a);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@layer components {
+  .glass-card {
+    @apply bg-slate-800/60 backdrop-blur-xl border border-white/10 rounded-3xl p-6 shadow-xl transition-all duration-200 active:scale-[0.99];
+  }
+
+  .btn {
+    @apply bg-gradient-to-br from-violet-500 to-violet-700 text-white border-none px-6 py-4 rounded-2xl font-semibold text-base cursor-pointer transition-all duration-200 shadow-lg shadow-violet-500/30 flex items-center justify-center gap-2 relative overflow-hidden active:scale-95 active:shadow-sm hover:-translate-y-0.5;
+  }
+
+  .btn-secondary {
+    @apply bg-white/5 border border-white/10 shadow-none text-slate-200 from-transparent to-transparent hover:bg-white/10;
+  }
+
+  .btn-icon {
+    @apply w-10 h-10 rounded-xl flex items-center justify-center bg-white/5 text-slate-400 border-none transition-all duration-200 active:bg-white/10 active:text-white active:scale-90 hover:bg-white/10;
+  }
+
+  .nav-bar {
+    @apply fixed bottom-5 left-1/2 -translate-x-1/2 w-[calc(100%-40px)] max-w-[460px] bg-slate-800/90 backdrop-blur-2xl border border-white/10 rounded-3xl px-6 py-3 flex justify-between items-center z-50 shadow-2xl shadow-black/40;
+  }
+
+  .nav-item {
+    @apply flex flex-col items-center gap-1 text-slate-400 bg-transparent border-none transition-all duration-300 px-4 py-2 rounded-2xl;
+  }
+
+  .nav-item.active {
+    @apply text-white bg-white/10;
+  }
+
+  .nav-item.active svg {
+    @apply text-violet-400 -translate-y-0.5;
+  }
+
+  .text-gradient {
+    @apply bg-gradient-to-r from-white to-slate-400 bg-clip-text text-transparent;
+  }
+}
+
+/* Custom Utilities */
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
