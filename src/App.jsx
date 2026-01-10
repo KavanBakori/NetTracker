@@ -50,7 +50,12 @@ function App() {
     const savedTransactions = localStorage.getItem('nettracker_transactions');
     const savedSettings = localStorage.getItem('nettracker_settings');
 
-    if (savedTransactions) setTransactions(JSON.parse(savedTransactions));
+    if (savedTransactions) {
+      const parsed = JSON.parse(savedTransactions);
+      // Clean up any stray settlements from existing data
+      const cleaned = parsed.filter(t => !t.description?.toLowerCase().includes('settle'));
+      setTransactions(cleaned);
+    }
     if (savedSettings) setSettings(JSON.parse(savedSettings));
   }, []);
 
@@ -67,13 +72,22 @@ function App() {
   const monthlyTransactions = useMemo(() => {
     return transactions.filter(t => {
       const d = new Date(t.date);
-      return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+      const isSettle = t.description?.toLowerCase().includes('settle');
+      return d.getMonth() === currentMonth && d.getFullYear() === currentYear && !isSettle;
     });
   }, [transactions, currentMonth, currentYear]);
 
   const totalSpent = useMemo(() => {
     return monthlyTransactions.reduce((acc, t) => acc + Number(t.amount), 0);
   }, [monthlyTransactions]);
+
+  const todaySpent = useMemo(() => {
+    const today = new Date().toDateString();
+    return transactions.filter(t => {
+      const isSettle = t.description?.toLowerCase().includes('settle');
+      return new Date(t.date).toDateString() === today && !isSettle;
+    }).reduce((acc, t) => acc + Number(t.amount), 0);
+  }, [transactions]);
 
   // Handlers
   const handleAddExpense = (expense) => {
@@ -107,7 +121,10 @@ function App() {
       const expensesRes = await axios.get(`/api/splitwise/get_expenses?dated_after=${startOfMonth}&limit=100`, { headers });
 
       const newTransactions = expensesRes.data.expenses
-        .filter(e => e.deleted_at === null)
+        .filter(e => {
+          const isSettle = e.description?.toLowerCase().includes('settle');
+          return e.deleted_at === null && !e.payment && !isSettle;
+        })
         .map(e => {
           const myShare = e.users.find(u => u.user_id === userId);
           const owed = myShare ? parseFloat(myShare.owed_share) : 0;
@@ -191,6 +208,17 @@ function App() {
               total={settings.budgetLimit}
               spent={totalSpent}
             />
+
+            {/* Today's Spend */}
+            <div className="glass-card flex justify-between items-center p-5 bg-gradient-to-br from-violet-500/10 to-transparent">
+              <div className="flex flex-col">
+                <span className="text-sm text-slate-400 font-medium mb-1">Today's Spend</span>
+                <span className="text-2xl font-bold text-white">₹{todaySpent.toLocaleString('en-IN')}</span>
+              </div>
+              <div className="w-12 h-12 bg-violet-500/10 rounded-2xl flex items-center justify-center border border-violet-500/20">
+                <div className="w-2 h-2 bg-violet-400 rounded-full animate-pulse shadow-[0_0_10px_2px_rgba(167,139,250,0.5)]" />
+              </div>
+            </div>
 
             {/* Quick Actions */}
             <div className="grid grid-cols-2 gap-4">
